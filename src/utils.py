@@ -24,13 +24,17 @@ def evaluate_models(X_train,y_train,X_test,y_test,models,params):
 
         for i in range(len(models)):
             model = list(models.values())[i] #loop through all models
-            param = params[list(models.keys())[i]]
+            try:
+                param = params[list(models.keys())[i]]
+                #Hyperparameter tuning using GridSearchCV
+                gs = GridSearchCV(model,param_grid=param,cv=5,n_jobs=3,verbose=2,refit=True)
+                gs.fit(X_train,y_train)
 
-            #Hyperparameter tuning using GridSearchCV
-            gs = GridSearchCV(model,param_grid=param,cv=5,n_jobs=3,verbose=2,refit=True)
-            gs.fit(X_train,y_train)
+                model.set_params(**gs.best_params_)
+            except:
+                #if no parameter found in params then pass
+                pass
 
-            model.set_params(**gs.best_params_)
             model.fit(X_train,y_train) #Train model
 
             y_train_pred = model.predict(X_train) 
